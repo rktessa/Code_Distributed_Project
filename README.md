@@ -3,95 +3,49 @@ py -m venv .env
 python3 -m venv .env
 
 University Project
-January 23
+January 23-January 2023
 Riccardo Tessarin and Simone Carli
 
-## Obiettivo del progetto
-Creare una infrastruttura hardware per testare un algoritmo di distributed system. usando dei differential drive robots che si muovono autonomamente nello spazio. 
+## Project objectives
+Creating a hardware infrastructure to test a distributed system algorithm. Using differential drive robots that move autonomously in space. 
 
-In particolare vi è l'implementazione di una rete di comunicazione totalmente distributa, sfruttando il protocollo ad Hoc e l'uso di inidizzi ip statici e la creazione di un sistema di comunicazione e messaggistica per la diffusione di informazioni tra gli agent nel network.
+Specifically, there is the implementation of a fully distributed communication network, exploiting ad Hoc protocol and the use of static ip address and the creation of a communication and messaging system for disseminating information among the agents in the network.
 
-### Strumenti usati: 
-- Batman-adv, un sistema per implementare reti ad hoc, che si trova già nel kernel di linux;
-- ZeroMQ un ptotocollo di comunicazione veloce e leggero da implementare;
--  Piattaforma Arduino per il controllo dei robots e la lettura dei sensori installati nella scheda
-- Raspberry per la comunicazione
-- Algoritmi di obstacle avoidance e logica di contollo per far muovere i droni
-
-## Algoritmo da testare
-
-Localizzazione  usando ranging e IMU. Simulazione in matlab, con n punti (5 o 7), simulare un accelerometro e un uwb e implementare un multi dimensional scaling e un filtro gpb. 
-
-L'idea è risolvere la mappa relativa togliendo le ambiguità di rotation e di flip usando queste due misure. 
-Creazione di una mappa globale o relativa, in cui tutti sanno dove sono gli altri veramente. Ognuno deve implementare il filtro gpb, che partendo dal mds ( per trovare la geometria relativa) e dalle misure continua a cercare di capire in quale configurazione si trova
-MDS = Multi dimensional scaling
-GPB = Generalised Pseudo Bayesian, sono N filtri di kalman con modelli diversi, per capire se sono a v costante, quasi statico o uniformenente accelerato. Non so in quali di questi 3 stati sono, ma posso essere in uno solo  di questi. 
-Il caso più generalizzato di questo modello è l'IMM: Interactive Multiple Model, ma a noi basta lo step precedente, non può succedere questo. 
-
-Quasi tutto si fa su matlab, con la soluzione, si prendono n robottini e si può fare un esperimento. 
-Una soluzione fatta così non c'è al momento. 
-
-Convergere ad una soluzione unendo queste due misurazioni e usando il filtro gpb è la cosa interessante.
-
-Ipotesi di quanti modelli vanno instanziati: 
-- quello che esce dal mds
-- la sua versione specchiata su un asse
-- la sua versione specchiata nell'altro asse
-- la rotazione la decido a priori perchè decido io a monte come è ruotato il sistema, "per me stesso la terna è ruotata così"
-
-A priori non so se la soluzione del mds è corretta, devo verificarlo. Vedere se di questi 3 modelli uno ha il mode, la probabilità che va a 1. 
-
-GPB 1 su github...
-basta cambiare il modello
-
-Idea finale, Swarming con piattaforma per navigare o esplorare un ambiente, la soluzione è agnostica da questo.
-
-Navigazione, conosco la mappa
-Esplorazione devo anche costruire la mappa. 
-
-Swarm per il mantenimento di una certa formazione è interessante. 
+## Youtube demo
+A demo of the code running is visible in:
+https://youtu.be/A0rwAjhCfVU
 
 
- ### Link utili a video per imparare a implementare
-- More details on dead reckoning, MATLAB Tech Talk video: https://bit.ly/37T9BRT
-- Understanding the Kalman Filter, MATLAB Tech Talk Series: https://bit.ly/314rLia
-- Another good description of the particle filter: https://youtu.be/aUkBa1zMKv4
-- Download ebook: Sensor Fusion and Tracking for Autonomous Systems: An Overview - https://bit.ly/2YZxvXA
-- Download white paper: Sensor Fusion and Tracking for Autonomous Systems - https://bit.ly/2YZxvXA
-- A Tutorial on Particle Filtering and Smoothing (includes AMCL). Paper by Doucet and Johansen: https://www.stats.ox.ac.uk/~doucet/do...
+### Used tools: 
+- Batman-adv, a system for implementing ad hoc networks, which is already in the linux kernel;
+- ZeroMQ a communication protocol that is fast and light to implement;
+-  Arduino platform for controlling robots and reading sensors installed on the board
+- Raspberry for communication, storage and wls algorithm execution
+- Obstacle avoidance algorithms and control logic to make drones move
+- wls algorithm both standard and a distributed
 
+## Chapter subdivision
+ 1. Ad Hoc network implementation
+ 2. Arduino code
+ 3. Matlab code
+ 4. Python code
 
-Io ho un MDS implementato preso da qui dove è tutto spiegato molto bene anche:
-==> https://nbviewer.org/github/drewwilimitis/Manifold-Learning/blob/master/Multidimensional_Scaling.ipynb
+# 1. Mesh network implementation with Raspberry and Batman advance
 
-Altro articolo da guardare: https://ieeexplore.ieee.org/document/10008692
+To create the mesh network with raspberry the following steps were necessary:
 
-Questa pagina web è molto interessante e presenta in modo chiaro come funziona
-MDS implementato in sklearn ==> https://stackabuse.com/guide-to-multidimensional-scaling-in-python-with-scikit-learn/
-
-
-### Analisi e messa in ordine articoli trovati
-- **Solving Ambiguities in MDS Relative Localization:** Presenta lavoro su come risolvere ste benedette ambiguità dovute alla localizzazione. 
-        Questo articolo mi rimanda a **A. Kannan, B. Fidan, G. Mao, and B. Anderson, “Analysis of flip ambiguities in distributed network localization,”** che spiega bene le ambiguità
-- **Generalized pseudo Bayesian algorithms for tracking of multiple model underwater maneuvering target** questo è molto interessnte per vedere come costruire i GPB 1 estimators. 
-
-
-# Creazione Rete Mesh con Raspberry
-
-Per creare la rete mesh con raspberry i seguenti passaggi sono stati necessari: 
-
-1. Per prima cosa installare 
+1. Initially install 
 ***
 ```sudo apt-get update && sudo apt-get upgrade -y``` 
 ***
 
-2. Poi installare
+2. then run
 ***
 ```sudo apt-get install -y batctl``` 
 
 
-Bisogna verificare che Batman sia caricato prima di cercare di usarlo
-inserire questo codice nel file ```sudo nano /etc/modules```
+You need to verify that Batman is loaded before trying to use it
+enter this code in the file ```sudo nano /etc/modules```
 
 ```
 # /etc/modules: kernel modules to load at boot time.
@@ -103,9 +57,9 @@ i2c-dev
 batman-adv
 ```
 
-3. Andare in ```cd /etc/network/interfaces.d```
+3. Go to ```cd /etc/network/interfaces.d```
 
-4. Creare file sudo nano wlan0 e inserire le seguenti linee di codice:
+4. Create a file "sudo nano wlan0" and enter the following lines of code:
 ***
 ```
 auto wlan0
@@ -117,11 +71,11 @@ iface wlan0 inet manual
     # wireless-ap 02:12:34:56:78:9A
 ```
 
-Se è già presente un file **wlan0** commenta con un # le linee del codice presenti. 
+if a file **wlan0** is already existing, comment using # the already present code rows. 
 
-Funziona anche con il comando ```iface wlan0 inet6 manual``` e impostando a 1532 valore del MTU. 
+It also works with the command ```iface wlan0 inet6 manual``` and setting to 1532 the value of MTU. 
 
-5. Allo stesso modo creare un secondo file sempre nella medesima posizione, chiamandolo **bat0**
+5. Similarly, create a second file always in the same location, calling it **bat0**
 ***
 ```
 auto bat0
@@ -136,11 +90,11 @@ iface bat0 inet auto
    pre-up /usr/sbin/batctl if add wlan0
 ```
 
-Le prime tre righe sono commentate perchè in questa configurazione non sto usando il protocollo **ipv6** ma solo quello ipv4. 
+The first three lines are commented out because in this configuration I am not using the protocol **ipv6**, but only the **ipv4**. 
 
-### Nodo Mesh
+### Mesh Node
 
-6. Per un nodo di mesh va poi inserito il seguente codice all'interno del file ```sudo nano /etc/rc.local ```
+6. For a mesh node, the following code should then be inserted within the file ```sudo nano /etc/rc.local ```
 
 ```
 #!/bin/sh -e
@@ -152,28 +106,28 @@ sudo ifconfig wlan0 up &
 
 exit 0
 ```
-7. Interompere il  processo di DHCP per evitare che provi a gestire l'interfaccia wireless lan usando il seguente comando :
+7. Interrupt the DHCP process to prevent it from trying to manage the wireless lan interface using the following command :
 ***
 ```
 echo 'denyinterfaces wlan0' | sudo tee --append /etc/dhcpcd.conf
 ```
 
-A questo punto al riavvio il node di mesh si collega automaticamente alla rete ad-hoc creata. 
+At this point on reboot, the mesh node automatically connects to the created ad-hoc network. 
 
-### Nodo Gateway
-1. Installare il seguente pacchetto per la gestione del software DHCP
+###  Gateway node
+1. Install the following package for managing DHCP software
 ```sudo apt-get install -y dnsmasq```
 
-2. Configurare il server DHCP con le seguenti impostazioni: 
+2. Configure the DHCP server with the following settings:
 ```sudo nano /etc/dnsmasq.conf```
 ```
-# Da inserire in fondo a tutto il file commentato
+#To be inserted at the bottom of the entire annotated file
 interface=bat0
 dhcp-range=192.168.123.2,192.168.123.99,255.255.255.0,12h
 ```
 
 
-3. Per un nodo di Gateway va poi inserito il seguente codice all'interno del file ```sudo nano /etc/rc.local ```
+3. For a Gateway node, the following code should then be inserted within the file ```sudo nano /etc/rc.local ```
 
 ```
 #!/bin/sh -e
@@ -212,101 +166,94 @@ exit 0
 
 ```
 
-## Assegnazione di un indirizzo ipv4 statico 
-1. Andare nel seguente file: 
+## Assigning a static ipv4 address
+1. Go to the following file: 
 ***
 ```sudo nano /etc/dhcpcd.conf```
 
-2. Inserire il comando ```static ip_address=192.168.xxx.4/24 ``` 
+2. Enter the command ```static ip_address=192.168.xxx.4/24 ``` 
 
 
 
 
-# Comunicazione con ZeroMQ
+##  ZeroMQ communication
 
-Sfruttando zeroMQ è possibile creare il protocollo di comunicazione e l'app di messagistica che verrà usata per svolgere l'esperimento condividendo le informazioni dello stato dei vari robot a vicenda.
+Taking advantage of zeroMQ, it is possible to create the communication protocol and messaging app that will be used to carry out the experiment by sharing the status information of the various robots with each other.
 
+TWO PUB-SUB type socket has been created: two programs run simultaneously in each machine: a first one acts as a server. It is a PUB and collects sensor readings, packages them and sends them to SUBs, which use these values with the WLS algorithm. 
 
-Un socket di tipo PUB-SUB è stato creato: in ogni macchina girano in contemporanea due programmi: un primo funge da server, è un PUB raccoglie le letture dei sensori, le impacchetta e le spedisce ai SUBs, che usano questi valori con l'algoritmo di MDS. 
-
-5 server e 5 subscriber sono quindi necessari. Il subscriber è lo stesso per tutti gli agenti. La discovery (assegnazione egli indirizzi ip e del canale tcp) viene fatta manuamente, sfruttando l'impostazione statica della rete di droni fatta con Batman-adv. 
-
+Four servers and four subscribers are therefore needed. The subscriber is the same for all agents. The discovery (assignment of the ip addresses and tcp channel) is done manually, taking advantage of the static drone network setup done with Batman-adv.
 
 
 
-# Comunicazione seriale
+### Serial communication
 pip install pyserial
 
 lsusb
 
 dmesg | grep "tty"  e trova il nome della porta
 
-## To check the connected devices
+### To check the connected devices
 sudo arp-scan --interface=bat0 --localnet
 
-## To check active process running on the raspberry
+### To check active process running on the raspberry
 ps aux
 
 
-Il comando è questo e va in **sudo nano rc.local**
+This is the command  **sudo nano rc.local** and must be inserted in
 ```/usr/bin/python3 /home/pi/Desktop/example.py &amp; ``` 
 
-- Script di Sub sul mio nodo Raspberry per raccogliere tutte le info e fare dei plot oppure per usare il gateway come  ponte per la comunicazione con il pc. 
-Ho da qualche parte uno script che fa plot dinamici con flussi di data in ingresso. 
 
-- Bisogna fare una analisi delle incertezze dei segnali e delle misure, in particolare di quello della velocità linerare. 
-Gli altri che poi mi servono sono Giroscopio e MDS. 
+# 2. Arduino
+- folder "Calibrazione_rotazione.." contains code used to acquire encoder data and perform their calibration and analysis
+- folder "Ostacoli.." has the code that communicate with the raspberry, perform the obstacle avoidance and is controlled by Rasperry. 
 
+# 3. Matlab
+- In "analisi_dati_Mbots" there are the code write to read the log of the Mbots and visuale, analyse the data
+- In "Log_Mbots" there are the mBots data collected in some experiments
+- In "wls_statiche" there are all the code realized to implement and test the wls program. Experiment with only one agent, multiple agents, latency, increasing erro in the distance measured. 
 
+# 4. Python
+Here there is the code implemented to perform the experiments with the real agents
 
-
-
-# Descrizione cartelle
-In **serial_data** ci sono dei log in txt dei robottini e poi in plot_log.py questi sono stampati. Si vede bene che funziona correttamente il gyro, che l'accelerometro aquisisce in modo abbastanza rumoro e che la velocità non è calcolata correttamente al momento. 
-
-In **Roba buona** c'è il codice che funziona per far andare la comunicazione. Forse gli esperimenti che avevo fatto a inizio maggio con il doppio pub sub possono essere rivisti. Li c'era del bel codice.
-
-
-# Encoder
-Vedi come funzionano e come fa la stima, con il feedback  nell'encoder, a questo link ci sono le informazion
-https://category.yahboom.net/products/encoder-tt-motor
-
-
-# Central control room
+## centrale_comando folder
 The ojective is to control all the Mbots from a central deliver controller, in order to simplify the start, stop and reset of the Mbots operations.
 
-In **command_central.py** there is a PUB socket, with an INPUT from keyboard the program send at the Pi connected and waiting from instrunctions the action to perform:
+- In **Command_central_Gateway.py** there is a PUB socket, with an INPUT from keyboard the program send at the Pi connected and waiting from instrunctions the action to perform:
 Start, Stop or Reset for power up, terminate or reinitilize
 
-In **initial_script.py** there is a script that must be executed when the Pi is launched: necessary to insert the instruction and execute at reboot. 
+## mbots_droni_p2p folder
+
+- In **initial_script_3_Mbot.py** there is a script that must be executed when the Pi is launched: necessary to insert the instruction and execute at reboot. 
 It attend for the command from the central station and can start the arduino wired connected, stop it and reset. Furthemore it starts the pythons code PUB and SUB to record the data of the experiment. 
 
-
-C'è uno script di Arduino, da integrare che accetta comandi dal seriale e spero di poter così sia comandare che leggere in dietro i dati che mi da l'arduino per il raspberry. 
-
-
-## IMPORTANTE CAPIRE COME FAR IMPORTARE CORRETTAMENTE PYZMQ all'avvio!
-
-il  programma di subscrption che gira sugli Mbot ha come unica cosa che lo fa andare il fatto di ricevere una informazione da qualsiasi veicolo. lui la prende e la  smista e se la salva in archivio. devo allocare tutte le matrici per cercare di renderlo più fluido altrimenti con tutti questi append è un macello.
-
-Mentre il publisher può essere pilotato da esterno, perchè ha seconda dello stato dei robot è lui che manda o no la comunicazione. quindi quando è in stop il publisher, è in stop anche il programma che registra e possono essere in stop anche le macchinette. la funzione che publica è esterna in un altro file, mentre al suo interno si connette al central_pub per ascoltare cosa deve fare. 
-
+- **uwb_routine.py** contains code to be inserted into each Mbot, this is done to
+read the uwb in the background and save the values in a pickle file, which will then be read by subscriber. 
+It simplify and make it more efficient the subscriber. In a subscriber you have to write a pickle file state when the code terminates, this code interrupts code execution.
+- **subscriber_to_Mbot3.py** Here there are 4 SUB, to receive the information from all the nodes in the network and store in memory. It is the base code, the info collected can be used for algorithms
+- **subscriber_real_solo_wls.py** read the data of uwb using "uwb_routine" and perform the localisation. Execution of the wls algorithm. 
+- **wls_class.py** contains all the function required to perform the execution of the wls algorithm, both in simulation and with real agents. In a distributed or non distributed mode.
+- **subscriber_to_Mbot_5_WLS_final.py** the developed code implementation to run with the real agents
+- in **wls_mbot_2_macchine.py** and **wls_mbot_alone.py** there are the simulation perfromed with the python code 
 
 
-# Procedura di Uso
+
+
+
+# Use Procedure
 
 ## Setup Raspberry e Arduino
-1. Caricare in raspberry che si usa come centrale di comando gli script: 
+1. Load into raspberry that you use as a command center the scripts: 
 - Command_central_Gateway.py
 - global_variable_Gateway.py  
 - central_pub_Gateway.py
 - var_strings_Gateway_.py
 
-2. Caricare il codice su tutte le Arduino Uno aka Makeblock Me Orion
+2. Upload code to all Arduino Uno aka Makeblock Me Orion+
 
-3. Caricare su tutte le Raspberry montate negli MBots gli script:
+3. Load on all Raspberrys mounted in the MBots the scripts:
 
-Usare scp to copiare intera cartella:
+Use scp to copy the entire folder:
 
     scp -r [source_directory] [username]@[destination_host]:[destination_directory]
 
@@ -329,28 +276,23 @@ Per la 4:
 
 - initial_script_3_Mbot.py
 - pub_to_sub_Mbot.py 
-- subscriber_to_mbot_3_Mbot.py.
+- subscriber_to_mbot_3_Mbot.py
+- subscriber_to_Mbot_5_WLS_final.py
 - var_strings_.py
 - uwb_routine.pu
 
-Codice **uwb_routine.py** contiene codice da inserire in ciascuna Mbot, questo è fatto per
-leggere in background l'uwb e salvare i valori in un pickle file, che poi verrà letto da subscriber. 
-Semplifico e rendo più efficiente così subscriber. In subscriber devi scriver un pickle file stato quando il 
-codice termina, questo codice interrompe esecuzione del codice. 
+
+4. Find ip address, command **sudo arp-scan --interface=bat0 --localnet**. 
+On **ALL** raspberry correctly assigns addresses and ports in **var_strings_.py** . 
+
+5. On every Mbot lauch both initial_script_3_Mbot.py and subscriber_to_mbot_3_Mbot.py
 
 
+6. launch command central e send comand calibrate, wait the time indicated, then digitate start
 
-4. Trovare indirizzi ip, commando **sudo arp-scan --interface=bat0 --localnet**. 
-Su **tutte** le raspberry assegna correttamente gli indirizzi e le porte in **var_strings_.py** . 
+7. Acquisition of all the data
 
-5. Su ogni Mbot lanciare sia initial_script_3_Mbot.py che subscriber_to_mbot_3_Mbot.py
-
-
-6. lanciare command central e iniviare comando calibrate, poi start
-
-7. Acquisire tutti i dati
-
-8. Copiare il log in Central Raspberry using  **scp data_Mbot_00.txt piktessa@192.168.123.1:/home/piktessa/Distributed/log_Mbot_6**
+8. Copy the log in Central Raspberry using  **scp data_Mbot_00.txt piktessa@192.168.123.1:/home/piktessa/Distributed/log_Mbot_6**
 
 **Per la 1:**
 
@@ -371,56 +313,7 @@ Su **tutte** le raspberry assegna correttamente gli indirizzi e le porte in **va
     scp data_Mbot_100.txt piktessa@192.168.123.1:/home/piktessa/Distributed/num_4
     scp logs/data_Mbot_rotation00.txt piktessa@192.168.123.1:/home/piktessa/Distributed/num_4
 
-    Controllare la 1, non ha trasmesso, ha degli errori sul seriale in lettura della UWB. 
-
-# Per la relazione: 
-
-1. Acquisizione dati e confronto con Luca per post processing offline
-
-2. Caratterizzazione sensori: accelerometro, encoder, UWB. ==> Farlo ruotare di tot angolo e misura. 
-
-3. Scrittura Abstrract, Introduzione, Formulazione del Problema 
-
-4. Presentazione del lavoro fatto per il design della comunicazione, quindi studio delle tecnologie di comunicazione
-
-5. Presentazione teoria di un differential drive robot, dinamica e quali sono i sensori che abbiamo usato per sviluppare una logica di movimento e controllo
-
-6. Come è stato implementata la comunicazione, Batman-adv e ZeroMQ
-
-7. Caratterizzazione dei sensori e delle misure raccolte, il giro e lo slalom, per IMU e rotary encoder. Una misura ferma e una misura in movimento per gli UWB ? ==> Va bene per caratterizzarli? chiedere a Luca. 
-
-
-# Studio valori encoder ruote
-
-In Data_giroscopio Mbot1 si vede che la ruota 2 o destra ha una misura più corretta, mentre l'encoder di sinistra a questa velocità ha un offset di 0.5 rad/s
-
-
-# Distributed Extended Kalman Filter
-
-Ogni Mbot esegue un Extend Kalman Filter, con il suo modello e va a fondere i dati presi dalle ancore fisse, con quelli rilevati dagli Mbot in movimento. 
-
-Per fare questo devo prima risolvere con WLS la trilateration usando i dati che ho a disposizione, cioè misuri da punti fissi e misure da punti mobili.
-
-Da lettura UWB otterrò array con tutte le distanze e uso quello per implementare prima trilateration e poi stima della trilateration nel filtro?  Sicuramente funziona. Ho un dubbio sul suo comportamento poi nella stima della Update. 
-
-- Togliere dati che non servono dall'essere inviati. Si devono mandare i dati della UWB e i dati della posizione istantanea in cui si trovano calcolata col il loro kalman filter. 
-
-## Parte Update del Kalman filter
-
-Io voglio stimare con i miei sensori uwb la posizione (x,y) nel piano di una macchina. 
-Risolvo con WLS il problema di trilateration e quel dato lo inserisco nel predict del kalman filter. 
-
-# WLS con le Mbot
-
-Codice sviluppato in **subscriber_to_mbot_3WLS.py**. Ci sono 4 macchine in movimento e una fissa che funge da punto noto,
-base operativa. Attraverso wls di ogni macchina, si comunicano la distanza reciproca tra di loro con ancore UWB e la stima 
-che ogni macchina sta facendo della sua posizione. Algoritmo ricorsivo che ad ogni iterazione che fa tende a migliorare la sua stima. 
-Quindi importante fare la parte in cui nei messaggi si mandano la posizione anche, è da aggiungere a tutto il resto
-e poi che con ogni iterazione faccia qualche step per l'algoritmo ricorsivo in più
+    
 
 
 
-## fare funzione che calcola varianza errore di misura UWB dopo 1000 acquisizioni
-Non ha senso fare una funzione che calcoli la posizione all'inizio in modo statica, 
-dovrebbe in meno di un secondo riuscire a fare circa una ventina di iterazioni e 
-queste dovrebbero essere sufficienti per arrivare alla stima iniziale. 
