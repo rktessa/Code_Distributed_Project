@@ -3,7 +3,7 @@ py -m venv .env
 python3 -m venv .env
 
 University Project
-January 23-January 2023
+April 2023 - January 2024
 Riccardo Tessarin and Simone Carli
 
 ## Project objectives
