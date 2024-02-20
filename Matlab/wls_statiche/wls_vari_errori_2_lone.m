@@ -133,7 +133,7 @@ end
 
 
 % Faccio x volte la simulazione per avere una media del RMSE
-n = 1000;
+n = 10;
 E_multiple = zeros(n,1); % n = number of simulations
 var_multiple = zeros(n,1);
 sol_multiple = zeros(n,2); % First element of the solution
@@ -199,7 +199,7 @@ L2 = 11.2 *0.01;  % interasse in cm
 
 
 % Faccio x volte la simulazione per avere una media del RMSE
-n = 1000;
+n = 10;
 E_movement = zeros(n,1); % n = number of simulations
 var_movement = zeros(n,1); 
 for e = 1:n

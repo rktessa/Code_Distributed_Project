@@ -1,0 +1,3 @@
+-test_model: allow to test different communcation methods with the simulink model
+-test_time: allow to verify loop time and acquisition loop
+-test_msg: allow to test communication with the simulink model manually sending messages

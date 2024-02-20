@@ -201,7 +201,7 @@ end
 
 
 % Faccio x volte la simulazione per avere una media del RMSE
-n = 1000;
+n = 10;
 E_multiple = zeros(n,4); % n = number of simulations
 var_multiple = zeros(n,4);
 sol_multiple = zeros(n,4); % First element of the solution

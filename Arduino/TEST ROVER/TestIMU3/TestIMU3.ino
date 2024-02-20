@@ -1,0 +1,408 @@
+// Basic demo for accelerometer readings from Adafruit MPU6050
+
+#include <Adafruit_MPU6050.h>
+#include <Adafruit_Sensor.h>
+
+#include <MeMCore.h>
+#include <Arduino.h>
+#include <Wire.h>
+#include <SoftwareSerial.h>
+
+
+MeDCMotor motor1(M1);     //SINISTRO -motorSpeed == AVANTI
+MeDCMotor motor2(M2);    //DESTRO motorSpeed == AVANTI
+
+int resamotori = 90;
+int compsx = 100*(200-resamotori)/100;
+int compdx = 98*(200-resamotori)/100;
+float power = 60.0/100; // 50 % potenza
+uint8_t motorSpeed = 255*power; /* value: between -255 and 255. */
+float travel=100; //mm percorsi
+
+int steeringAngle = 30; //gradi di rotazione DEVI VERIFICARE QUANTO CI METTE
+int steeringTime = steeringAngle*1000.0/(280*power); //DEVE ESSERE INTERO E PARI
+int backTime = 150*1000.0/(362*power); //RITORNO INDIETRO DI 100 mm 550
+int stopTime = 200; //TEMPO TRA STOP E RIAVVIO MOTORI
+int exitTime = 400*1000.0/(362*power); // USCITA INDIETRO DI 400 mm 2200
+int obstacle =1;
+int distStop =30;
+int resto = 0;
+int rnd = 1;
+
+int n = 1;
+
+Adafruit_MPU6050 mpu;
+MeGyro gyro;
+
+void setup(void) {
+  Serial.begin(115200);
+  while (!Serial)
+    delay(10); // will pause Zero, Leonardo, etc until serial console opens
+
+  Serial.println("Adafruit MPU6050 test!");
+
+  // Try to initialize!
+  if (!mpu.begin()) {
+    Serial.println("Failed to find MPU6050 chip");
+    while (1) {
+      delay(10);
+    }
+  }
+  Serial.println("MPU6050 Found!");
+
+  mpu.setAccelerometerRange(MPU6050_RANGE_8_G);
+  Serial.print("Accelerometer range set to: ");
+  switch (mpu.getAccelerometerRange()) {
+  case MPU6050_RANGE_2_G:
+    Serial.println("+-2G");
+    break;
+  case MPU6050_RANGE_4_G:
+    Serial.println("+-4G");
+    break;
+  case MPU6050_RANGE_8_G:
+    Serial.println("+-8G");
+    break;
+  case MPU6050_RANGE_16_G:
+    Serial.println("+-16G");
+    break;
+  }
+  mpu.setGyroRange(MPU6050_RANGE_500_DEG);
+  Serial.print("Gyro range set to: ");
+  switch (mpu.getGyroRange()) {
+  case MPU6050_RANGE_250_DEG:
+    Serial.println("+- 250 deg/s");
+    break;
+  case MPU6050_RANGE_500_DEG:
+    Serial.println("+- 500 deg/s");
+    break;
+  case MPU6050_RANGE_1000_DEG:
+    Serial.println("+- 1000 deg/s");
+    break;
+  case MPU6050_RANGE_2000_DEG:
+    Serial.println("+- 2000 deg/s");
+    break;
+  }
+
+  mpu.setFilterBandwidth(MPU6050_BAND_21_HZ);
+  Serial.print("Filter bandwidth set to: ");
+  switch (mpu.getFilterBandwidth()) {
+  case MPU6050_BAND_260_HZ:
+    Serial.println("260 Hz");
+    break;
+  case MPU6050_BAND_184_HZ:
+    Serial.println("184 Hz");
+    break;
+  case MPU6050_BAND_94_HZ:
+    Serial.println("94 Hz");
+    break;
+  case MPU6050_BAND_44_HZ:
+    Serial.println("44 Hz");
+    break;
+  case MPU6050_BAND_21_HZ:
+    Serial.println("21 Hz");
+    break;
+  case MPU6050_BAND_10_HZ:
+    Serial.println("10 Hz");
+    break;
+  case MPU6050_BAND_5_HZ:
+    Serial.println("5 Hz");
+    break;
+  }
+
+  Serial.println("");
+  delay(100);
+  
+  pinMode(A7, INPUT);
+  motor1.stop();
+  motor2.stop();
+
+  while(analogRead(A7) > 10){
+    delay(100);
+    }
+}
+
+/* FERMO
+   *Acceleration X: 0.32, Y: 0.11, Z: 8.42 m/s^2
+    Rotation X: -0.01, Y: -0.03, Z: -0.01 rad/s
+    X:2.19 Y:0.78 Z:0.76
+    Temperature: 25.79 degC
+
+   */
+
+void loop() {
+  // Get new sensor events with the readings 
+  sensors_event_t a, g, temp;
+  mpu.getEvent(&a, &g, &temp);
+  
+   
+
+  // Print out the values 
+  
+  Serial.println("----------PARTENZA AVANTI--------- ");
+  Serial.println(n);
+  Serial.print("Acceleration X: ");
+  Serial.print(a.acceleration.x);
+  Serial.print(", Y: ");
+  Serial.print(a.acceleration.y);
+  Serial.print(", Z: ");
+  Serial.print(a.acceleration.z);
+  Serial.println(" m/s^2");
+
+  Serial.print("Rotation X: ");
+  Serial.print(g.gyro.x);
+  Serial.print(", Y: ");
+  Serial.print(g.gyro.y);
+  Serial.print(", Z: ");
+  Serial.print(g.gyro.z);
+  Serial.println(" rad/s");
+
+  gyro.update();
+  Serial.read();
+  Serial.print("X:");
+  Serial.print(gyro.getAngleX() );
+  Serial.print(" Y:");
+  Serial.print(gyro.getAngleY() );
+  Serial.print(" Z:");
+  Serial.println(gyro.getAngleZ() );
+  
+  Serial.print("Temperature: ");
+  Serial.print(temp.temperature);
+  Serial.println(" degC");
+
+  Serial.println("");
+  delay(500);
+
+}
+/*
+void loop() {
+  // Get new sensor events with the readings 
+  sensors_event_t a, g, temp;
+  mpu.getEvent(&a, &g, &temp);
+  
+   
+
+  // Print out the values 
+  
+  motor1.run(-motorSpeed*compsx/100);
+  motor2.run(motorSpeed*compdx/100);
+  //delay(100);
+
+  n=1;
+  while(n<20){
+  Serial.println("----------PARTENZA AVANTI--------- ");
+  Serial.println(n);
+  Serial.print("Acceleration X: ");
+  Serial.print(a.acceleration.x);
+  Serial.print(", Y: ");
+  Serial.print(a.acceleration.y);
+  Serial.print(", Z: ");
+  Serial.print(a.acceleration.z);
+  Serial.println(" m/s^2");
+
+  Serial.print("Rotation X: ");
+  Serial.print(g.gyro.x);
+  Serial.print(", Y: ");
+  Serial.print(g.gyro.y);
+  Serial.print(", Z: ");
+  Serial.print(g.gyro.z);
+  Serial.println(" rad/s");
+
+  gyro.update();
+  Serial.read();
+  Serial.print("X:");
+  Serial.print(gyro.getAngleX() );
+  Serial.print(" Y:");
+  Serial.print(gyro.getAngleY() );
+  Serial.print(" Z:");
+  Serial.println(gyro.getAngleZ() );
+  
+  Serial.print("Temperature: ");
+  Serial.print(temp.temperature);
+  Serial.println(" degC");
+
+  Serial.println("");
+  delay(50);
+  n++;
+  }
+
+
+
+  
+  Serial.println("----------AVANTI----------- ");
+  Serial.print("Acceleration X: ");
+  Serial.print(a.acceleration.x);
+  Serial.print(", Y: ");
+  Serial.print(a.acceleration.y);
+  Serial.print(", Z: ");
+  Serial.print(a.acceleration.z);
+  Serial.println(" m/s^2");
+
+  Serial.print("Rotation X: ");
+  Serial.print(g.gyro.x);
+  Serial.print(", Y: ");
+  Serial.print(g.gyro.y);
+  Serial.print(", Z: ");
+  Serial.print(g.gyro.z);
+  Serial.println(" rad/s");
+
+  gyro.update();
+  Serial.read();
+  Serial.print("X:");
+  Serial.print(gyro.getAngleX() );
+  Serial.print(" Y:");
+  Serial.print(gyro.getAngleY() );
+  Serial.print(" Z:");
+  Serial.println(gyro.getAngleZ() );
+  
+  Serial.print("Temperature: ");
+  Serial.print(temp.temperature);
+  Serial.println(" degC");
+
+  Serial.println("");
+  delay(500);
+
+  motor1.stop();
+  motor2.stop();
+ // delay(100);
+  
+  Serial.println("----------STOP----------- ");
+  Serial.print("Acceleration X: ");
+  Serial.print(a.acceleration.x);
+  Serial.print(", Y: ");
+  Serial.print(a.acceleration.y);
+  Serial.print(", Z: ");
+  Serial.print(a.acceleration.z);
+  Serial.println(" m/s^2");
+
+  Serial.print("Rotation X: ");
+  Serial.print(g.gyro.x);
+  Serial.print(", Y: ");
+  Serial.print(g.gyro.y);
+  Serial.print(", Z: ");
+  Serial.print(g.gyro.z);
+  Serial.println(" rad/s");
+
+  gyro.update();
+  Serial.read();
+  Serial.print("X:");
+  Serial.print(gyro.getAngleX() );
+  Serial.print(" Y:");
+  Serial.print(gyro.getAngleY() );
+  Serial.print(" Z:");
+  Serial.println(gyro.getAngleZ() );
+  
+  Serial.print("Temperature: ");
+  Serial.print(temp.temperature);
+  Serial.println(" degC");
+
+  Serial.println("");
+  delay(500);
+
+  motor1.run(motorSpeed*compsx/100);
+  motor2.run(-motorSpeed*compdx/100);
+  //delay(100);
+  
+  Serial.println("----------PARTENZA INDIETRO----------- ");
+  Serial.print("Acceleration X: ");
+  Serial.print(a.acceleration.x);
+  Serial.print(", Y: ");
+  Serial.print(a.acceleration.y);
+  Serial.print(", Z: ");
+  Serial.print(a.acceleration.z);
+  Serial.println(" m/s^2");
+
+  Serial.print("Rotation X: ");
+  Serial.print(g.gyro.x);
+  Serial.print(", Y: ");
+  Serial.print(g.gyro.y);
+  Serial.print(", Z: ");
+  Serial.print(g.gyro.z);
+  Serial.println(" rad/s");
+
+  gyro.update();
+  Serial.read();
+  Serial.print("X:");
+  Serial.print(gyro.getAngleX() );
+  Serial.print(" Y:");
+  Serial.print(gyro.getAngleY() );
+  Serial.print(" Z:");
+  Serial.println(gyro.getAngleZ() );
+  
+  Serial.print("Temperature: ");
+  Serial.print(temp.temperature);
+  Serial.println(" degC");
+
+  Serial.println("");
+  delay(1000);
+
+  Serial.println("----------INDIETRO----------- ");
+  Serial.print("Acceleration X: ");
+  Serial.print(a.acceleration.x);
+  Serial.print(", Y: ");
+  Serial.print(a.acceleration.y);
+  Serial.print(", Z: ");
+  Serial.print(a.acceleration.z);
+  Serial.println(" m/s^2");
+
+  Serial.print("Rotation X: ");
+  Serial.print(g.gyro.x);
+  Serial.print(", Y: ");
+  Serial.print(g.gyro.y);
+  Serial.print(", Z: ");
+  Serial.print(g.gyro.z);
+  Serial.println(" rad/s");
+
+  gyro.update();
+  Serial.read();
+  Serial.print("X:");
+  Serial.print(gyro.getAngleX() );
+  Serial.print(" Y:");
+  Serial.print(gyro.getAngleY() );
+  Serial.print(" Z:");
+  Serial.println(gyro.getAngleZ() );
+  
+  Serial.print("Temperature: ");
+  Serial.print(temp.temperature);
+  Serial.println(" degC");
+
+  Serial.println("");
+  delay(500);
+
+  motor1.stop();
+  motor2.stop();
+  //delay(100);
+  
+  Serial.println("----------STOP----------- ");
+  Serial.print("Acceleration X: ");
+  Serial.print(a.acceleration.x);
+  Serial.print(", Y: ");
+  Serial.print(a.acceleration.y);
+  Serial.print(", Z: ");
+  Serial.print(a.acceleration.z);
+  Serial.println(" m/s^2");
+
+  Serial.print("Rotation X: ");
+  Serial.print(g.gyro.x);
+  Serial.print(", Y: ");
+  Serial.print(g.gyro.y);
+  Serial.print(", Z: ");
+  Serial.print(g.gyro.z);
+  Serial.println(" rad/s");
+
+  gyro.update();
+  Serial.read();
+  Serial.print("X:");
+  Serial.print(gyro.getAngleX() );
+  Serial.print(" Y:");
+  Serial.print(gyro.getAngleY() );
+  Serial.print(" Z:");
+  Serial.println(gyro.getAngleZ() );
+  
+  Serial.print("Temperature: ");
+  Serial.print(temp.temperature);
+  Serial.println(" degC");
+
+  Serial.println("");
+  delay(500);
+}
+*/

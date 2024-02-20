@@ -205,8 +205,8 @@ This is the command  **sudo nano rc.local** and must be inserted in
 
 
 # 2. Arduino
-- folder "Calibrazione_rotazione.." contains code used to acquire encoder data and perform their calibration and analysis
-- folder "Ostacoli.." has the code that communicate with the raspberry, perform the obstacle avoidance and is controlled by Rasperry. 
+- There are several folder here that comprise both base command for use the Mbot and several test implemented to develop the final obstacle avoidance code. 
+- folder "LAST_VERSION" has the code that communicate with the raspberry, perform the obstacle avoidance and is controlled by Rasperry. 
 
 # 3. Matlab
 - In "analisi_dati_Mbots" there are the code write to read the log of the Mbots and visuale, analyse the data

@@ -17,7 +17,7 @@ n_agents = 5;
 
 
 % Faccio x volte la simulazione per avere una media del RMSE
-n = 1000;
+n = 10;
 iter = 100;
 E_multiple = zeros(n,8); % n = number of simulations
 var_multiple = zeros(n,8);

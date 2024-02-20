@@ -340,7 +340,7 @@ L2 = 11.2 *0.01;  % interasse in cm
 % anchors = [A1;A2; A3];
 % n_agents = 5;
 % Faccio x volte la simulazione per avere una media del RMSE
-n = 1000;
+n = 10;
 E_movement = zeros(n,4); % n = number of simulations
 var_movement = zeros(n,4); 
 for e = 1:n
