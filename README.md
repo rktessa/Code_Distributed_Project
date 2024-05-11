@@ -12,8 +12,8 @@ Creating a hardware infrastructure to test a distributed system algorithm. Using
 Specifically, there is the implementation of a fully distributed communication network, exploiting ad Hoc protocol and the use of static ip address and the creation of a communication and messaging system for disseminating information among the agents in the network.
 
 ## Youtube demo
-A demo of the code running is visible in:
-https://youtu.be/A0rwAjhCfVU
+A demo of the code running is visible in a [demo](https://youtu.be/A0rwAjhCfVU):
+
 
 
 ### Used tools: 
